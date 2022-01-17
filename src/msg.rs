@@ -16,8 +16,8 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     SetPrice { denom: String, price: Uint128 },
-    Buy { denom: String, price: Uint128 },
-    WithdrawAll {},
+    // Buy { denom: String, price: Uint128 },
+    // WithdrawAll {},
     Receive(Cw20ReceiveMsg),
 }
 
