@@ -52,7 +52,7 @@ pub fn execute(
             },
         ),
         ExecuteMsg::Receive(msg) => try_receive(deps, msg),
-        // ExecuteMsg::Buy { denom, price } => try_buy(deps, info, denom, price),
+        ExecuteMsg::Buy { denom, price } => try_buy(deps, info, denom, price),
         // ExecuteMsg::WithdrawAll {} => try_withdraw_all(deps, info.sender),
     }
 }
@@ -295,54 +295,54 @@ mod tests {
               assert_eq!(Uint128::new(10), value.balance);
           }
 
-          // #[test]
-          // fn buy_token() {
-          //     let mut deps = mock_dependencies(&coins(2, "token"));
-          //     let price: Uint128 = Uint128::from(7u128);
-          //     let denom: String = "utoken".to_string();
-          //     let msg = InstantiateMsg {
-          //         cw20_address: Addr::unchecked("asdf"),
-          //         price,
-          //         denom: denom.clone(),
-          //     };
-          //     let info = mock_info("creator", &coins(2, "utoken"));
-          //     let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-          //
-          //     let info = mock_info("creator", &coins(2, "token"));
-          //     let msg = ExecuteMsg::Receive(cw20::Cw20ReceiveMsg {
-          //         amount: Uint128(4),
-          //         sender: "asdf".to_string(),
-          //         msg: to_binary("a").unwrap(),
-          //     });
-          //     let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
-          //
-          //     // basic buy
-          //     let msg = ExecuteMsg::Buy {
-          //         price: Uint128(7),
-          //         denom: denom.clone(),
-          //     };
-          //     let info = mock_info("buyer", &coins(14, "utoken"));
-          //     let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
-          //     assert_eq!(_res.attributes.first().unwrap(), &attr("amount", 2));
-          //
-          //     // over pay
-          //     let msg = ExecuteMsg::Buy {
-          //         denom: denom.clone(),
-          //         price,
-          //     };
-          //     let info = mock_info("buyer", &coins(20, "utoken"));
-          //     let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
-          //     assert_eq!(_res.attributes.first().unwrap(), &attr("amount", 2));
-          //
-          //     // wrong denom
-          //     let msg = ExecuteMsg::Buy {
-          //         denom: denom.clone(),
-          //         price,
-          //     };
-          //     let info = mock_info("buyer", &coins(2, "uwrong"));
-          //     let _res = execute(deps.as_mut(), mock_env(), info, msg);
-          //     assert!(_res.is_err());
-          // }
+          #[test]
+          fn buy_token() {
+              let mut deps = mock_dependencies(&coins(2, "token"));
+              let price: Uint128 = Uint128::from(7u128);
+              let denom: String = "utoken".to_string();
+              let msg = InstantiateMsg {
+                  cw20_address: Addr::unchecked("asdf"),
+                  price,
+                  denom: denom.clone(),
+              };
+              let info = mock_info("creator", &coins(2, "utoken"));
+              let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+              let info = mock_info("creator", &coins(2, "token"));
+              let msg = ExecuteMsg::Receive(cw20::Cw20ReceiveMsg {
+                  amount: Uint128::new(4),
+                  sender: "asdf".to_string(),
+                  msg: to_binary("a").unwrap(),
+              });
+              let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+
+              // basic buy
+              let msg = ExecuteMsg::Buy {
+                  price: Uint128::new(7),
+                  denom: denom.clone(),
+              };
+              let info = mock_info("buyer", &coins(14, "utoken"));
+              let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+              assert_eq!(_res.attributes.first().unwrap(), &attr("amount", "2"));
+
+              // over pay
+              let msg = ExecuteMsg::Buy {
+                  denom: denom.clone(),
+                  price,
+              };
+              let info = mock_info("buyer", &coins(20, "utoken"));
+              let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+              assert_eq!(_res.attributes.first().unwrap(), &attr("amount", "2"));
+
+              // wrong denom
+              let msg = ExecuteMsg::Buy {
+                  denom: denom.clone(),
+                  price,
+              };
+              let info = mock_info("buyer", &coins(2, "uwrong"));
+              let _res = execute(deps.as_mut(), mock_env(), info, msg);
+              assert!(_res.is_err());
+          }
           //
           // #[test]
           // fn buy_token_with_multiple_coins() {
