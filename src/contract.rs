@@ -1,12 +1,13 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::{
     attr, entry_point, to_binary, Addr, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, MessageInfo,
-    Response, StdResult, Uint128, WasmMsg,
+    Response, StdResult, Uint128, WasmMsg, StdError
 };
 
 use crate::error::ContractError;
 use crate::msg::{ExecuteMsg, InfoResponse, InstantiateMsg, QueryMsg};
 use crate::state::{State, STATE};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 // version info for migration info
@@ -20,6 +21,18 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
+    if msg.start_time < _env.block.time.seconds() {
+        return Err(ContractError::Std(StdError::generic_err(
+            "start_time is less then current time",
+        )));
+    }
+
+    if msg.end_time <= msg.start_time {
+        return Err(ContractError::Std(StdError::generic_err(
+            "end_time is less then or same as start_time",
+        )));
+    }
+
     let state = State {
         owner: info.sender,
         cw20_address: msg.cw20_address,
@@ -28,7 +41,10 @@ pub fn instantiate(
             amount: msg.price,
         },
         balance: Uint128::zero(),
+        start_time: msg.start_time,
+        end_time: msg.end_time,
     };
+
     STATE.save(deps.storage, &state)?;
 
     Ok(Response::default())
@@ -212,10 +228,19 @@ mod tests {
       fn proper_initialization() {
           let mut deps = mock_dependencies(&[]);
 
+          // set the start_time and end_time
+          let start_time = SystemTime::now()
+              .duration_since(UNIX_EPOCH)
+              .unwrap()
+              .as_secs();
+          let end_time = start_time + 1000;
+
           let msg = InstantiateMsg {
               cw20_address: Addr::unchecked("asdf"),
               price: Uint128::from(7u128),
               denom: "token".to_string(),
+              start_time,
+              end_time,
           };
           let info = mock_info("creator", &coins(1000, "earth"));
 
@@ -233,10 +258,19 @@ mod tests {
           fn set_price() {
               let mut deps = mock_dependencies(&coins(2, "token"));
 
+               // set the start_time and end_time
+               let start_time = SystemTime::now()
+                   .duration_since(UNIX_EPOCH)
+                   .unwrap()
+                   .as_secs();
+               let end_time = start_time + 1000;
+
               let msg = InstantiateMsg {
                   cw20_address: Addr::unchecked("asdf"),
                   price: Uint128::from(7u128),
                   denom: "token".to_string(),
+                  start_time,
+                  end_time,
               };
               let info = mock_info("creator", &coins(2, "token"));
               let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -273,10 +307,19 @@ mod tests {
           fn receive_cw20_token() {
               let mut deps = mock_dependencies(&coins(2, "token"));
 
+              // set the start_time and end_time
+              let start_time = SystemTime::now()
+                  .duration_since(UNIX_EPOCH)
+                  .unwrap()
+                  .as_secs();
+              let end_time = start_time + 1000;
+
               let msg = InstantiateMsg {
                   cw20_address: Addr::unchecked("asdf"),
                   price: Uint128::from(7u128),
                   denom: "token".to_string(),
+                  start_time,
+                  end_time
               };
               let info = mock_info("creator", &coins(2, "token"));
               let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -300,11 +343,22 @@ mod tests {
               let mut deps = mock_dependencies(&coins(2, "token"));
               let price: Uint128 = Uint128::from(7u128);
               let denom: String = "utoken".to_string();
+
+              // set the start_time and end_time
+              let start_time = SystemTime::now()
+                  .duration_since(UNIX_EPOCH)
+                  .unwrap()
+                  .as_secs();
+              let end_time = start_time + 1000;
+
               let msg = InstantiateMsg {
                   cw20_address: Addr::unchecked("asdf"),
                   price,
                   denom: denom.clone(),
+                  start_time,
+                  end_time
               };
+
               let info = mock_info("creator", &coins(2, "utoken"));
               let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 

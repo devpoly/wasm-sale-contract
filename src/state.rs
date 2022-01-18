@@ -10,6 +10,8 @@ pub struct State {
     pub cw20_address: Addr,
     pub price: Coin,
     pub balance: Uint128,
+    pub start_time: u64,
+    pub end_time: u64,
 }
 
 pub const STATE: Item<State> = Item::new("state");
