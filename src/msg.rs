@@ -19,7 +19,7 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     SetPrice { denom: String, price: Uint128 },
     Buy { denom: String, price: Uint128 },
-    // WithdrawAll {},
+    WithdrawAll {},
     Receive(Cw20ReceiveMsg),
 }
 
